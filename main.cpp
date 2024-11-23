@@ -23,16 +23,23 @@ int main()
 
 void f_producer()
 {
-	while (true)
-	{
-		this_thread::sleep_for(chrono::seconds(1));
-		{
-			unique_lock<mutex> unique_l(mutex_);
-			flag = true;
-			cout << "Event sent" << endl;
-			conditional_var.notify_one();
-		}
-	}
+    while (true)
+    {
+        this_thread::sleep_for(chrono::seconds(1));
+        {
+            unique_lock<mutex> unique_l(mutex_);
+            if (flag) // check потерялся ли флаг
+            {
+                cout << "Warning: Event lost!" << endl;
+            }
+            else
+            {
+                flag = true;
+                cout << "Event sent" << endl;
+                conditional_var.notify_one();
+            }
+        }
+    }
 }
 
 

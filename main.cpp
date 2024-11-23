@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 using namespace std;
 
 mutex mutex_;
@@ -13,7 +14,6 @@ void f_consumer();
 
 int main()
 {
-	setlocale(LC_ALL, "rus");
 	thread producer(f_producer);
 	thread consumer(f_consumer);
 	producer.join();
@@ -25,11 +25,11 @@ void f_producer()
 {
 	while (true)
 	{
-		this_thread::sleep_for(chrono::seconds(0));
+		this_thread::sleep_for(chrono::seconds(1));
 		{
-			unique_lock<mutex> ul(mutex_);
+			unique_lock<mutex> unique_l(mutex_);
 			flag = true;
-			cout << "Событие отправлено\n";
+			cout << "Event sent" << endl;
 			conditional_var.notify_one();
 		}
 	}
@@ -43,6 +43,6 @@ void f_consumer()
 		unique_lock<mutex> unique_l(mutex_);
 		conditional_var.wait(unique_l, []() {return flag; });
 		flag = false;
-		cout << "Событие обработано\n";
+		cout << "Event processed" << endl;
 	}
 }
